@@ -1,4 +1,4 @@
 package com.raiffeisen.peopleagenda.presentation.agenda
 
-class AgendaViewModel {
+class UsersAgendaViewModel {
 }
