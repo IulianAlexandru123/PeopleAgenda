@@ -1,15 +1,15 @@
 package com.raiffeisen.peopleagenda.data.remote
 
-import retrofit2.Call
+import com.raiffeisen.peopleagenda.data.remote.dto.UsersResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface UsersAgendaApi {
+internal interface UsersAgendaApi {
 
     @GET("api/")
     suspend fun getUsers(
         @Query("page") page: Int,
         @Query("results") results: Int,
         @Query("seed") seed: String
-    ): Call<List<String>>
+    ): UsersResponseDto
 }

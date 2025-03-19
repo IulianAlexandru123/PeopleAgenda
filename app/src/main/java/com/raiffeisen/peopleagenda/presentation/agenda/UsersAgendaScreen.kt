@@ -1,13 +1,19 @@
 package com.raiffeisen.peopleagenda.presentation.agenda
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,39 +24,78 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import com.raiffeisen.peopleagenda.R
+import com.raiffeisen.peopleagenda.common.hourAndMinutes
+import com.raiffeisen.peopleagenda.domain.model.User
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun UsersAgendaScreen() {
-    Column(modifier = Modifier.fillMaxSize()) {
-        UserItem()
-        HorizontalDivider()
+internal fun UsersAgendaScreen(
+    viewModel: UsersAgendaViewModel = koinViewModel()
+) {
+    val state = viewModel.state.value
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(
+                items = state.users,
+                key = { user -> user.fistName + user.lastName }
+            ) { user ->
+                UserItem(
+                    user = user,
+                )
+                HorizontalDivider()
+            }
+        }
+        if (state.error.isNotBlank()) {
+            Text(
+                text = state.error,
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .align(Alignment.Center)
+            )
+        }
+        if (state.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
     }
 }
 
-private const val ICON_SIZE = 24
+private const val ICON_SIZE = 20
+private const val PROFILE_IMAGE_SIZE = 48
 
 @Composable
-private fun UserItem() {
-    Row(modifier = Modifier.padding(8.dp)) {
-        AsyncImage(
-            model = "https://randomuser.me/api/portraits/thumb/women/88.jpg",
+private fun UserItem(user: User) {
+    Row(
+        modifier = Modifier.padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(model = user.profilePictureUrl),
             contentDescription = null,
             modifier = Modifier
-                .clip(ShapeDefaults.Medium)
+                .clip(ShapeDefaults.ExtraLarge)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
+                .size(PROFILE_IMAGE_SIZE.dp)
         )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
         Column {
             Text(
-                text = "Scott Ernest",
+                text = "${user.fistName} ${user.lastName}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.outline,
             )
             Text(
-                text = "28 years from US",
+                text = "${user.age} years from ${user.country}",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -70,7 +115,7 @@ private fun UserItem() {
                 Spacer(modifier = Modifier.width(4.dp))
 
                 Text(
-                    text = "13:45",
+                    text = user.registeredDate.hourAndMinutes(),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.outline,
                 )

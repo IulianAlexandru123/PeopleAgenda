@@ -1,4 +1,9 @@
 package com.raiffeisen.peopleagenda.presentation.agenda
 
-class UsersAgendaState {
-}
+import com.raiffeisen.peopleagenda.domain.model.User
+
+internal data class UsersAgendaState(
+    val isLoading: Boolean = false,
+    val users: List<User> = emptyList(),
+    val error: String = ""
+)
