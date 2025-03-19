@@ -9,16 +9,18 @@ import java.lang.reflect.Type
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-internal val gson: Gson = GsonBuilder()
-    .registerTypeAdapter(ZonedDateTime::class.java, object : JsonDeserializer<ZonedDateTime> {
-        private val formatter = DateTimeFormatter.ISO_DATE_TIME
+internal val gson: Gson =
+    GsonBuilder().registerTypeAdapter(
+        ZonedDateTime::class.java,
+        object : JsonDeserializer<ZonedDateTime> {
+            private val formatter = DateTimeFormatter.ISO_DATE_TIME
 
-        override fun deserialize(
-            json: JsonElement,
-            typeOfT: Type,
-            context: JsonDeserializationContext
-        ): ZonedDateTime {
-            return ZonedDateTime.parse(json.asString, formatter)
+            override fun deserialize(
+                json: JsonElement,
+                typeOfT: Type,
+                context: JsonDeserializationContext
+            ): ZonedDateTime {
+                return ZonedDateTime.parse(json.asString, formatter)
+            }
         }
-    })
-    .create()
+    ).create()

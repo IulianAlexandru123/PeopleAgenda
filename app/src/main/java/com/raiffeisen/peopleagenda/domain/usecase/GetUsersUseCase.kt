@@ -10,10 +10,14 @@ import java.io.IOException
 internal class GetUsersUseCase(
     private val repository: UsersAgendaRepository,
 ) {
-    operator fun invoke(page: Int = 0): Flow<Resource<List<User>>> = flow {
+    operator fun invoke(
+        page: Int = 0,
+        result: Int = 20,
+        seed: String = "abc",
+    ): Flow<Resource<List<User>>> = flow {
         try {
             emit(Resource.Loading())
-            emit(Resource.Success(repository.getUsers(page = page)))
+            emit(Resource.Success(repository.getUsers(page = page, result = result, seed = seed)))
         } catch (e: IOException) {
             emit(Resource.Error("Couldn't reach server. Check your internet connection."))
         } catch (e: Exception) {

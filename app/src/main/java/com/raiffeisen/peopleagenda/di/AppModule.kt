@@ -16,6 +16,7 @@ val appModule = module {
     }
 
     single {
+        // TODO: Remove HttpLoggingInterceptor from prod builds
         OkHttpClient.Builder()
             .addInterceptor(get<HttpLoggingInterceptor>())
             .connectTimeout(30, TimeUnit.SECONDS)
