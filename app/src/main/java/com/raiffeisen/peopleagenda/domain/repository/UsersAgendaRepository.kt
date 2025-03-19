@@ -4,5 +4,5 @@ import com.raiffeisen.peopleagenda.domain.model.User
 
 internal interface UsersAgendaRepository {
 
-    suspend fun getUsers(): List<User>
+    suspend fun getUsers(page: Int): List<User>
 }

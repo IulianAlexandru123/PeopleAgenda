@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -20,6 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,16 +35,32 @@ import coil3.compose.rememberAsyncImagePainter
 import com.raiffeisen.peopleagenda.R
 import com.raiffeisen.peopleagenda.common.hourAndMinutes
 import com.raiffeisen.peopleagenda.domain.model.User
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.androidx.compose.koinViewModel
+
+private const val BOTTOM_BUFFER_FOR_CONTINUOUS_SCROLLING = 3
 
 @Composable
 internal fun UsersAgendaScreen(
     viewModel: UsersAgendaViewModel = koinViewModel()
 ) {
     val state = viewModel.state.value
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
+            .collectLatest { lastVisibleItemIndex ->
+                if (lastVisibleItemIndex >= listState.layoutInfo.totalItemsCount - BOTTOM_BUFFER_FOR_CONTINUOUS_SCROLLING) {
+                    viewModel.loadNextPage()
+                }
+            }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = listState,
+        ) {
             items(
                 items = state.users,
                 key = { user -> user.fistName + user.lastName }
@@ -49,6 +69,16 @@ internal fun UsersAgendaScreen(
                     user = user,
                 )
                 HorizontalDivider()
+            }
+            if (state.isPartialLoading) {
+                item {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                    )
+                }
             }
         }
         if (state.error.isNotBlank()) {

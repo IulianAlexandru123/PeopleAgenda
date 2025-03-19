@@ -8,9 +8,9 @@ internal class UsersAgendaRepositoryImpl(
     private val api: UsersAgendaApi,
 ) : UsersAgendaRepository {
 
-    override suspend fun getUsers(): List<User> {
+    override suspend fun getUsers(page: Int): List<User> {
         return api.getUsers(
-            page = 0,
+            page = page,
             results = 20,
             seed = "abc",
         ).results.map { user -> user.toDomain() }
